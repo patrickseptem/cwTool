@@ -1,5 +1,7 @@
 package com.pat.app.cwtool.batch;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,7 @@ public class FinanceRecordProcessor implements
 
 	@Autowired
 	private KeywordAnalyzer analyzer;
-	public static final String PROCESSED_FINANCE_RECORD = "processedFinanceRecord";
+	public static final String PROCESSED_FINANCE_RECORDS = "processedFinanceRecords";
 
 	@Override
 	public ProcessedRecord<FinanceRecord> process(FinanceRecord record)
@@ -29,6 +31,13 @@ public class FinanceRecordProcessor implements
 
 		List<Keyword> commentKws = analyzer.analyze(record.getSummary());
 		kws.put(FinanceRecord.SUMMARY, commentKws);
+
+		List<Keyword> all = new ArrayList<>();
+		Collection<List<? extends Keyword>> values = kws.values();
+		for (List<? extends Keyword> list : values) {
+			all.addAll(list);
+		}
+		kws.put(ProcessedRecord.ALL_KEYWORDS, all);
 
 		return new ProcessedRecordImpl<FinanceRecord>(record, kws);
 	}

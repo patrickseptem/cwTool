@@ -35,6 +35,8 @@ public class PlainKeyword implements Keyword {
 			return true;
 		if (obj == null)
 			return false;
+		if (getValue().equals(obj.toString()))
+			return true;
 		if (getClass() != obj.getClass())
 			return false;
 		PlainKeyword other = (PlainKeyword) obj;
@@ -50,7 +52,8 @@ public class PlainKeyword implements Keyword {
 
 	@Override
 	public String toString() {
-		return "PlainKeyword [keyword=" + keyword + ", type=" + type + "]";
+		return "PlainKeyword [" + keyword + ", " + type + "]";
+		
 	}
 
 }

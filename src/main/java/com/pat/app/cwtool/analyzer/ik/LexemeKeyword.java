@@ -41,6 +41,8 @@ public class LexemeKeyword implements Keyword {
 			return true;
 		if (obj == null)
 			return false;
+		if (getValue().equals(obj.toString()))
+			return true;
 		if (getClass() != obj.getClass())
 			return false;
 		LexemeKeyword other = (LexemeKeyword) obj;
@@ -54,7 +56,7 @@ public class LexemeKeyword implements Keyword {
 
 	@Override
 	public String toString() {
-		return "LexemeKeyword [keyword=" + keyword + "]";
+		return "LexemeKeyword [" + keyword.getLexemeText() + "]";
 	}
 
 }

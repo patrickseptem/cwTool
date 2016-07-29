@@ -6,6 +6,7 @@ public interface BankRecord {
 
 	String ACCOUNT = "account";
 	String COMMENT = "comment";
+	public static final String NAME = "Name";
 
 	String getAccount();
 

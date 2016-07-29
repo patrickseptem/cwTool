@@ -7,6 +7,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
@@ -22,6 +23,7 @@ import com.pat.app.cwtool.batch.BankRecordProcessor;
 import com.pat.app.cwtool.batch.BankRecordReader;
 import com.pat.app.cwtool.batch.BaseRecordReader;
 import com.pat.app.cwtool.batch.BatchExceptionHandler;
+import com.pat.app.cwtool.batch.CollectCompanyUnpaidRecordsTasklet;
 import com.pat.app.cwtool.batch.FinanceRecordProcessor;
 import com.pat.app.cwtool.batch.FinanceRecordReader;
 import com.pat.app.cwtool.batch.ProcessedRecordWriter;
@@ -77,13 +79,13 @@ public class CwToolConfig {
 	@Bean
 	public ItemWriter<? super ProcessedRecord<FinanceRecord>> financeRecordWriter() {
 		return new ProcessedRecordWriter<FinanceRecord>(
-				FinanceRecordProcessor.PROCESSED_FINANCE_RECORD);
+				FinanceRecordProcessor.PROCESSED_FINANCE_RECORDS);
 	}
 
 	@Bean
 	@StepScope
 	public ItemProcessor<? super FinanceRecord, ? extends ProcessedRecord<FinanceRecord>> financeRecordProcessor() {
-		return null;
+		return new FinanceRecordProcessor();
 	}
 
 	@Bean
@@ -105,10 +107,22 @@ public class CwToolConfig {
 	}
 
 	@Bean
+	public Step step3() {
+		return stepBuilderFactory.get("step3")
+				.tasklet(collectCompanyUnpaidRecordsTasklet())
+				.listener(collectCompanyUnpaidRecordsTasklet()).build();
+	}
+
+	@Bean
+	public Tasklet collectCompanyUnpaidRecordsTasklet() {
+		return new CollectCompanyUnpaidRecordsTasklet();
+	}
+
+	@Bean
 	public Job job(Step step1) throws Exception {
 		return jobBuilderFactory.get("job1")
 				.incrementer(new RunIdIncrementer()).start(step1).next(step2())
-				.build();
+				.next(step3()).build();
 	}
 
 	@Bean

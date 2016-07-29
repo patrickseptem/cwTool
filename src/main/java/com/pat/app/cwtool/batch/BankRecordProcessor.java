@@ -1,6 +1,8 @@
 package com.pat.app.cwtool.batch;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +34,34 @@ public class BankRecordProcessor implements
 			throws Exception {
 		// TODO encapsulate process for different field to different handler
 		// classes; abstract processing to handler
-		KType accountType = null;
-		if (endsWithPostfix(record.getAccount(), BIZ_POSTFIXES)) {
-			accountType = KType.Business;
-		} else {
-			accountType = KType.Person;
-		}
 		Map<String, List<? extends Keyword>> kws = new HashMap<>();
-		kws.put(BankRecord.ACCOUNT, Arrays.asList(new PlainKeyword(record
-				.getAccount(), accountType)));
+		String account = record.getAccount();
+		if (!account.isEmpty()) {
+			KType accountType = null;
+			if (endsWithPostfix(record.getAccount(), BIZ_POSTFIXES)) {
+				accountType = KType.Business;
+			} else {
+				accountType = KType.Person;
+			}
+			List<Keyword> accountKws = new ArrayList<>();
+			PlainKeyword nameKeyword = new PlainKeyword(account, accountType);
+			accountKws.add(nameKeyword);
 
+			accountKws.addAll(analyzer.analyze(account));
+			kws.put(BankRecord.ACCOUNT, accountKws);
+			if (KType.Person == accountType) {
+				kws.put(BankRecord.NAME, Arrays.asList(nameKeyword));
+			}
+		}
 		List<Keyword> commentKws = analyzer.analyze(record.getComment());
 		kws.put(BankRecord.COMMENT, commentKws);
+
+		List<Keyword> all = new ArrayList<>();
+		Collection<List<? extends Keyword>> values = kws.values();
+		for (List<? extends Keyword> list : values) {
+			all.addAll(list);
+		}
+		kws.put(ProcessedRecord.ALL_KEYWORDS, all);
 
 		return new ProcessedRecordImpl<BankRecord>(record, kws);
 	}
