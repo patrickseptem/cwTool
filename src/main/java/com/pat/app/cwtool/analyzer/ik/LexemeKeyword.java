@@ -31,7 +31,8 @@ public class LexemeKeyword implements Keyword {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
+		result = prime * result
+				+ ((keyword == null) ? 0 : keyword.getLexemeText().hashCode());
 		return result;
 	}
 
@@ -45,13 +46,7 @@ public class LexemeKeyword implements Keyword {
 			return true;
 		if (getClass() != obj.getClass())
 			return false;
-		LexemeKeyword other = (LexemeKeyword) obj;
-		if (keyword == null) {
-			if (other.keyword != null)
-				return false;
-		} else if (!keyword.equals(other.keyword))
-			return false;
-		return true;
+		return getValue().equals(((Keyword) obj).getValue());
 	}
 
 	@Override

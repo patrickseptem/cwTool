@@ -1,6 +1,5 @@
 package com.pat.app.cwtool.batch;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,8 +13,11 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.pat.app.cwtool.analyzer.Keyword;
+import com.pat.app.cwtool.match.MatchManager;
+import com.pat.app.cwtool.match.MatchRecord;
 import com.pat.app.cwtool.model.BankRecord;
 import com.pat.app.cwtool.model.FinanceRecord;
 import com.pat.app.cwtool.model.ProcessedRecord;
@@ -29,12 +31,12 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 	private List<ProcessedRecord<BankRecord>> bankRecords;
 	private List<ProcessedRecord<FinanceRecord>> financeRecords;
 
+	@Autowired
+	MatchManager matchManager;
+
 	@Override
 	public RepeatStatus execute(StepContribution contribution,
 			ChunkContext chunkContext) throws Exception {
-
-		Map<ProcessedRecord<BankRecord>, Map<ProcessedRecord<FinanceRecord>, Short>> factors = new LinkedHashMap<>();
-
 		final int len = bankRecords.size();
 		final int len2 = financeRecords.size();
 		ProcessedRecord<BankRecord> br;
@@ -52,9 +54,13 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 
 			if (br.getKeywords().get(BankRecord.NAME) != null) {
 				nameKw = br.getKeywords().get(BankRecord.NAME).get(0);
+			}else{
+				nameKw = null;
 			}
 			for (int j = 0; j < len2; j++) {
 				fr = financeRecords.get(j);
+				MatchRecord matchRecord = matchManager
+						.createMatchRecord(br, fr);
 				if (isWithdraw ^ (fr.getRecord().getPayment() != 0)) {
 					continue;
 				}
@@ -75,6 +81,7 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 				for (Keyword fkw : allFinanceKeywords) {
 					if (allBankKeywords.contains(fkw)) {
 						factor++;
+						matchRecord.addMatchKeyword(fkw);
 					}
 				}
 
@@ -82,38 +89,34 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 					if (!fr.getRecord().getSummary()
 							.contains(nameKw.getValue())) {
 						factor -= 20;
+					} else {
+						matchRecord.addMatchKeyword(nameKw);
 					}
 				}
 
 				if (factor > 0) {
-					Map<ProcessedRecord<FinanceRecord>, Short> fs = factors
-							.get(br);
-					if (fs == null) {
-						fs = new LinkedHashMap<>();
-						factors.put(br, fs);
-					}
-					fs.put(fr, factor);
+					matchRecord.setFactor(factor);
+					matchManager.addMatchRecord(matchRecord);
 				}
 			}
 		}
 
-		s_logger.debug(String.format("%s条银行记录有相关财务记录", factors.size()));
-		Set<Entry<ProcessedRecord<BankRecord>, Map<ProcessedRecord<FinanceRecord>, Short>>> entrySet = factors
+		s_logger.debug(String.format("%s条银行记录有相关财务记录", matchManager
+				.getMatcheRecordsSize()));
+		Map<ProcessedRecord<BankRecord>, Set<MatchRecord>> matcheRecords = matchManager
+				.getMatcheRecords();
+		Set<Entry<ProcessedRecord<BankRecord>, Set<MatchRecord>>> entrySet = matcheRecords
 				.entrySet();
-		for (Entry<ProcessedRecord<BankRecord>, Map<ProcessedRecord<FinanceRecord>, Short>> entry : entrySet) {
-			System.out.println(entry.getKey().getRecord());
-			Set<Entry<ProcessedRecord<FinanceRecord>, Short>> es = entry
-					.getValue().entrySet();
+		for (Entry<ProcessedRecord<BankRecord>, Set<MatchRecord>> entry : entrySet) {
 			short max = 0;
-			FinanceRecord fr1 = null;
-			for (Entry<ProcessedRecord<FinanceRecord>, Short> e2 : es) {
-				if (e2.getValue() > max) {
-					max = e2.getValue();
-					fr1 = e2.getKey().getRecord();
+			MatchRecord bestMatch = null;
+			for (MatchRecord mr : entry.getValue()) {
+				if (mr.getFactor() > max) {
+					max = mr.getFactor();
+					bestMatch = mr;
 				}
 			}
-			System.out.println(fr1);
-			System.out.println("----匹配因子值:" + max);
+			System.out.println(bestMatch);
 		}
 		return RepeatStatus.FINISHED;
 	}

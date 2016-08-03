@@ -27,6 +27,7 @@ import com.pat.app.cwtool.batch.CollectCompanyUnpaidRecordsTasklet;
 import com.pat.app.cwtool.batch.FinanceRecordProcessor;
 import com.pat.app.cwtool.batch.FinanceRecordReader;
 import com.pat.app.cwtool.batch.ProcessedRecordWriter;
+import com.pat.app.cwtool.match.MatchManager;
 import com.pat.app.cwtool.model.BankRecord;
 import com.pat.app.cwtool.model.FinanceRecord;
 import com.pat.app.cwtool.model.ProcessedRecord;
@@ -138,5 +139,10 @@ public class CwToolConfig {
 	@Bean
 	public org.wltea.analyzer.cfg.Configuration companyConfig() {
 		return new DomainConfiguration("company.dic");
+	}
+
+	@Bean
+	public MatchManager getMatchManager() {
+		return new MatchManager();
 	}
 }

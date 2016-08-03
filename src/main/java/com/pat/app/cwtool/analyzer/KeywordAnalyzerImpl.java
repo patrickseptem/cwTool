@@ -12,7 +12,7 @@ import com.pat.app.cwtool.analyzer.ik.LexemeKeyword;
 
 public class KeywordAnalyzerImpl implements KeywordAnalyzer {
 
-	private IKSegmenter segmenter = new IKSegmenter(null, true);
+	private IKSegmenter segmenter = new IKSegmenter(null, false);
 
 	@Override
 	public List<Keyword> analyze(String text) throws IOException {
