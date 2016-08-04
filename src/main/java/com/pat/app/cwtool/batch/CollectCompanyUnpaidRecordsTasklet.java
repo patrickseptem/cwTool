@@ -1,9 +1,6 @@
 package com.pat.app.cwtool.batch;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +51,7 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 
 			if (br.getKeywords().get(BankRecord.NAME) != null) {
 				nameKw = br.getKeywords().get(BankRecord.NAME).get(0);
-			}else{
+			} else {
 				nameKw = null;
 			}
 			for (int j = 0; j < len2; j++) {
@@ -101,23 +98,9 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 			}
 		}
 
-		s_logger.debug(String.format("%s条银行记录有相关财务记录", matchManager
-				.getMatcheRecordsSize()));
-		Map<ProcessedRecord<BankRecord>, Set<MatchRecord>> matcheRecords = matchManager
-				.getMatcheRecords();
-		Set<Entry<ProcessedRecord<BankRecord>, Set<MatchRecord>>> entrySet = matcheRecords
-				.entrySet();
-		for (Entry<ProcessedRecord<BankRecord>, Set<MatchRecord>> entry : entrySet) {
-			short max = 0;
-			MatchRecord bestMatch = null;
-			for (MatchRecord mr : entry.getValue()) {
-				if (mr.getFactor() > max) {
-					max = mr.getFactor();
-					bestMatch = mr;
-				}
-			}
-			System.out.println(bestMatch);
-		}
+		s_logger.info(String.format("%s条银行记录有相关财务记录",
+				matchManager.getMatcheRecordsSize()));
+
 		return RepeatStatus.FINISHED;
 	}
 

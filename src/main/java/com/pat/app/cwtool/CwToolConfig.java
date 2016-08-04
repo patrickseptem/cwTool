@@ -26,6 +26,8 @@ import com.pat.app.cwtool.batch.BatchExceptionHandler;
 import com.pat.app.cwtool.batch.CollectCompanyUnpaidRecordsTasklet;
 import com.pat.app.cwtool.batch.FinanceRecordProcessor;
 import com.pat.app.cwtool.batch.FinanceRecordReader;
+import com.pat.app.cwtool.batch.OutputMatchedRecordsTasklet;
+import com.pat.app.cwtool.batch.OutputUnmatchedWithdrawBankRecordsTasklet;
 import com.pat.app.cwtool.batch.ProcessedRecordWriter;
 import com.pat.app.cwtool.match.MatchManager;
 import com.pat.app.cwtool.model.BankRecord;
@@ -115,6 +117,65 @@ public class CwToolConfig {
 	}
 
 	@Bean
+	public Step step5() {
+		return stepBuilderFactory.get("step5")
+				.tasklet(outputUnmatchedWithdrawBankRecordsTasklet()).build();
+	}
+
+	@Bean
+	public Tasklet outputUnmatchedWithdrawBankRecordsTasklet() {
+		return new OutputUnmatchedWithdrawBankRecordsTasklet();
+	}
+
+	@Bean
+	public Step step6() {
+		return stepBuilderFactory.get("step6")
+				.tasklet(outputUnmatchedDepositBankRecordsTasklet()).build();
+	}
+
+	@Bean
+	public Tasklet outputUnmatchedDepositBankRecordsTasklet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Bean
+	public Step step7() {
+		return stepBuilderFactory.get("step7")
+				.tasklet(outputUnmatchedPaymentFinanceRecordsTasklet()).build();
+	}
+
+	@Bean
+	public Tasklet outputUnmatchedPaymentFinanceRecordsTasklet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Bean
+	public Step step8() {
+		return stepBuilderFactory.get("step8")
+				.tasklet(outputUnmatchedProceedsFinanceRecordsTasklet())
+				.build();
+	}
+
+	@Bean
+	public Tasklet outputUnmatchedProceedsFinanceRecordsTasklet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Bean
+	public Step step4() {
+		return stepBuilderFactory.get("step4")
+				.tasklet(outputMatchedRecordsTasklet()).build();
+	}
+
+	@Bean
+	public Tasklet outputMatchedRecordsTasklet() {
+		return new OutputMatchedRecordsTasklet();
+	}
+
+	@Bean
 	public Tasklet collectCompanyUnpaidRecordsTasklet() {
 		return new CollectCompanyUnpaidRecordsTasklet();
 	}
@@ -123,7 +184,7 @@ public class CwToolConfig {
 	public Job job(Step step1) throws Exception {
 		return jobBuilderFactory.get("job1")
 				.incrementer(new RunIdIncrementer()).start(step1).next(step2())
-				.next(step3()).build();
+				.next(step3()).next(step4()).next(step5()).build();
 	}
 
 	@Bean
