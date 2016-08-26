@@ -1,49 +1,53 @@
 package com.pat.app.cwtool;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.pat.app.cwtool.batch.BaseRecordReader;
+
 @SpringBootApplication
 public class Launcher {
-
 	private static Logger s_logger = LoggerFactory.getLogger(Launcher.class);
-	
-	@Autowired
-	JobLauncher jobLauncher;
-	
-	@Autowired 
-	Job job;
-	
-	public void run(JobParameters params){
-		try {
-			jobLauncher.run(job, params);
-		} catch (JobExecutionAlreadyRunningException | JobRestartException
-				| JobInstanceAlreadyCompleteException
-				| JobParametersInvalidException e) {
-			s_logger.error(e.getMessage(), e);
-		}
-	}
-	
-	
+
 	public static void main(String[] args) throws IOException {
-//		JobParametersBuilder builder = new JobParametersBuilder();
-//		builder.addString("bankSheetPath", args[0]);
-//		builder.addString("financeSheetPath", args[1]);
-//		new Launcher().run(builder.toJobParameters());
+		String userDir = System.getProperty("user.dir");
+		File currentFolder = new File(userDir);
+		File[] dataFiles = currentFolder.listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("财务明细账") || name.startsWith("银行明细账");
+			}
+		});
+		if (dataFiles.length == 0) {
+			System.err.println("当前目录找不到财务明细账或银行明细账文件, 请仅放置要处理的明细账文件在当前目录.");
+		}
+		String bankSheetPath = null;
+		String financeSheetPath = null;
+		for (File dataFile : dataFiles) {
+			if (dataFile.getName().contains("财务明细账")) {
+				financeSheetPath = dataFile.getAbsolutePath();
+			} else if (dataFile.getName().contains("银行明细账")) {
+				bankSheetPath = dataFile.getAbsolutePath();
+			}
+		}
+
+		if (bankSheetPath == null || financeSheetPath == null) {
+			System.err.println("当前目录找不到财务明细账或银行明细账文件, 请仅放置要处理的明细账文件在当前目录.");
+		}
+
+		String[] batchArgs = {
+				"-bankSheetPath=/Users/bouyang/pubGitRepo/cwTool/src/test/resources/银行明细账-6月.xls",
+				"-financeSheetPath=/Users/bouyang/pubGitRepo/cwTool/src/test/resources/财务明细账6月.xls" };
 		System.exit(SpringApplication.exit(SpringApplication.run(
-		        CwToolConfig.class, args)));
+				CwToolConfig.class, batchArgs)));
 	}
 
 }
