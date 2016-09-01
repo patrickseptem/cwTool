@@ -184,8 +184,10 @@ public class CwToolConfig {
 	public Job job(Step step1) throws Exception {
 		return jobBuilderFactory.get("job1")
 				.incrementer(new RunIdIncrementer()).start(step1).next(step2())
-				.next(step3()).next(step4()).next(step5()).next(step6())
-				.next(step7()).next(step8()).build();
+				.next(step3()).next(step4())
+				// .next(step5()).next(step6())
+				// .next(step7()).next(step8())
+				.build();
 	}
 
 	@Bean

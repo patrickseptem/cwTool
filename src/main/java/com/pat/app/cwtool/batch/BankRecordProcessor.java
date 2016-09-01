@@ -49,8 +49,12 @@ public class BankRecordProcessor implements
 
 			accountKws.addAll(analyzer.analyze(account));
 			kws.put(BankRecord.ACCOUNT, accountKws);
-			if (KType.Person == accountType) {
+			if (KType.Business == accountType) {
 				kws.put(BankRecord.NAME, Arrays.asList(nameKeyword));
+			} else {
+				String name = parseBizName(account);
+				kws.put(BankRecord.NAME,
+						Arrays.asList(new PlainKeyword(name, accountType)));
 			}
 		}
 		List<Keyword> commentKws = analyzer.analyze(record.getComment());
@@ -64,6 +68,16 @@ public class BankRecordProcessor implements
 		kws.put(ProcessedRecord.ALL_KEYWORDS, all);
 
 		return new ProcessedRecordImpl<BankRecord>(record, kws);
+	}
+
+	private String parseBizName(String account) {
+		String bizName = account;
+		if (account.endsWith("有限公司")) {
+			bizName = account.substring(0, account.length() - 4);
+		} else if (account.endsWith("有限责任公司")) {
+			bizName = account.substring(0, account.length() - 6);
+		}
+		return bizName;
 	}
 
 	private boolean endsWithPostfix(String text, String[] postfixes) {
