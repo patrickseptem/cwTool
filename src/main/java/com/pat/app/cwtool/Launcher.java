@@ -43,11 +43,8 @@ public class Launcher {
 			System.err.println("当前目录找不到财务明细账或银行明细账文件, 请仅放置要处理的明细账文件在当前目录.");
 		}
 
-		String[] batchArgs = {
-				"-bankSheetPath=/Users/bouyang/pubGitRepo/cwTool/src/test/resources/银行明细账-6月.xls",
-				"-financeSheetPath=/Users/bouyang/pubGitRepo/cwTool/src/test/resources/财务明细账6月.xls" };
-		System.exit(SpringApplication.exit(SpringApplication.run(
-				CwToolConfig.class, batchArgs)));
+		String[] batchArgs = { "-bankSheetPath=" + bankSheetPath, "-financeSheetPath=" + financeSheetPath };
+		System.exit(SpringApplication.exit(SpringApplication.run(CwToolConfig.class, batchArgs)));
 	}
 
 }

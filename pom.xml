@@ -56,6 +56,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<jvmArguments>-Dfile.encoding=UTF8</jvmArguments>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -65,46 +68,54 @@
 							<mainClass>com.pat.app.cwtool.Launcher</mainClass>
 						</manifest>
 					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
 				</configuration>
 				<executions>
 					<execution>
+						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
 						<configuration>
-							<target>
-								<delete dir="${project.build.directory}/${distribution-folder}" />
-								<copy
-									file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar"
-									tofile="${project.build.directory}/${distribution-folder}/${distribution-jar}"
-									overwrite="true" />
-								<copy todir="${project.build.directory}/${distribution-folder}"
-									overwrite="true">
-									<fileset dir="${project.basedir}/scripts">
-										<include name="*.bat" />
-									</fileset>
-								</copy>
-								<zip destfile="${project.build.directory}/${distribution-archive}" basedir="${project.build.directory}/${distribution-folder}"/>
-							</target>
+							<descriptors>
+								<descriptor>assembly.xml</descriptor>
+							</descriptors>
 						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
+			<!-- <plugin> -->
+			<!-- <artifactId>maven-antrun-plugin</artifactId> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>package</phase> -->
+			<!-- <configuration> -->
+			<!-- <target> -->
+			<!-- <delete dir="${project.build.directory}/${distribution-folder}" /> -->
+			<!-- <copy -->
+			<!-- file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar" -->
+			<!-- tofile="${project.build.directory}/${distribution-folder}/${distribution-jar}" -->
+			<!-- overwrite="true" /> -->
+			<!-- <copy -->
+			<!-- file="${project.build.directory}/classes/application.properties" -->
+			<!-- tofile="${project.build.directory}/${distribution-folder}/application.properties" -->
+			<!-- overwrite="true" /> -->
+			<!-- <copy todir="${project.build.directory}/${distribution-folder}" -->
+			<!-- overwrite="true"> -->
+			<!-- <fileset dir="${project.basedir}/scripts"> -->
+			<!-- <include name="*.bat" /> -->
+			<!-- </fileset> -->
+			<!-- </copy> -->
+			<!-- <zip destfile="${project.build.directory}/${distribution-archive}" -->
+			<!-- basedir="${project.build.directory}/${distribution-folder}" /> -->
+			<!-- </target> -->
+			<!-- </configuration> -->
+			<!-- <goals> -->
+			<!-- <goal>run</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 		</plugins>
 	</build>
 
