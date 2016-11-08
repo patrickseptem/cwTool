@@ -6,7 +6,7 @@ import com.pat.app.cwtool.model.FinanceRecord;
 import com.pat.app.cwtool.model.ProcessedRecord;
 
 public class OutputUnmatchedPaymentFinanceRecordsTasklet extends
-		OutputUnmatchedFinanceRecordsTasklet {
+		BaseOutputUnmatchedFinanceRecordsTasklet {
 
 	@Override
 	protected String getTitle() {

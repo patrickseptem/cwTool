@@ -22,6 +22,7 @@ import com.pat.app.cwtool.model.ProcessedRecord;
 public abstract class BaseOuputUnmatchedRecordsTasklet<T> implements Tasklet {
 
 	private static final String OUTPUT_FILE_EXT = ".xls";
+	protected CellStyle dateCellStyle;
 
 	protected abstract void createDataRow(T record, Row row);
 
@@ -41,9 +42,7 @@ public abstract class BaseOuputUnmatchedRecordsTasklet<T> implements Tasklet {
 
 	protected void createHeaders(Row row, String[] headers) {
 		for (int i = 0; i < headers.length; i++) {
-			String h = headers[i];
-			Cell cell = row.createCell(i);
-			cell.setCellValue(h);
+			row.createCell(i).setCellValue(headers[i]);
 		}
 	}
 
@@ -64,37 +63,52 @@ public abstract class BaseOuputUnmatchedRecordsTasklet<T> implements Tasklet {
 			ChunkContext chunkContext) throws Exception {
 		Map<String, Object> ctx = chunkContext.getStepContext()
 				.getJobExecutionContext();
-		Set<ProcessedRecord<T>> matchedBRs = (Set<ProcessedRecord<T>>) ctx
+		Set<ProcessedRecord<T>> matchedRecords = (Set<ProcessedRecord<T>>) ctx
 				.get(getMatchedRecordsProperty());
-		List<ProcessedRecord<T>> allBRs = (List<ProcessedRecord<T>>) ctx
+		List<ProcessedRecord<T>> allRecords = (List<ProcessedRecord<T>>) ctx
 				.get(getRecordsProperty());
-		if (matchedBRs == null || matchedBRs.isEmpty()) {
+		if (matchedRecords == null || matchedRecords.isEmpty()) {
 			return RepeatStatus.FINISHED;
 		}
 
 		Workbook workbook = new HSSFWorkbook();
 		Sheet sheet = workbook.createSheet();
+		
+		createDateCellStyle(workbook);
 
 		// create title
 		int cursor = 0;
 		createTitle(workbook, sheet, sheet.createRow(cursor++), getTitle());
 		createHeaders(sheet.createRow(cursor++), getHeader());
 
-		addDataRow(matchedBRs, allBRs, sheet, cursor);
+		addDataRow(matchedRecords, allRecords, sheet, cursor);
+		
+		final int len = getHeader().length;
+		for (int i = 0; i < len; i++) {
+			sheet.autoSizeColumn(i);
+		}
 
 		FileOutputStream fos = new FileOutputStream(getTitle()
 				+ OUTPUT_FILE_EXT);
-		workbook.write(fos);
-		fos.close();
+		try {
+			workbook.write(fos);
+		} finally {
+			fos.close();
+		}
 
 		return RepeatStatus.FINISHED;
 	}
 
-	protected void addDataRow(Set<ProcessedRecord<T>> matchedBRs,
-			List<ProcessedRecord<T>> allBRs, Sheet sheet, int cursor) {
+	private void createDateCellStyle(Workbook workbook) {
+		dateCellStyle = workbook.createCellStyle();
+		dateCellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd"));
+	}
+
+	protected void addDataRow(Set<ProcessedRecord<T>> matchedRecords,
+			List<ProcessedRecord<T>> allRecords, Sheet sheet, int cursor) {
 		int currentCursor = cursor;
-		for (ProcessedRecord<T> br : allBRs) {
-			if (isUnmatchedRecord(matchedBRs, br)) {
+		for (ProcessedRecord<T> br : allRecords) {
+			if (isUnmatchedRecord(matchedRecords, br)) {
 				createDataRow(br.getRecord(), sheet.createRow(currentCursor++));
 			}
 		}

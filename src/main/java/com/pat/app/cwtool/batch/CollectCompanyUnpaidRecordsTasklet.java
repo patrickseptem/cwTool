@@ -21,6 +21,8 @@ import com.pat.app.cwtool.model.ProcessedRecord;
 
 public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 
+	private static final int AMOUNT_FACTOR = 4;
+
 	private static final Logger s_logger = LoggerFactory
 			.getLogger(CollectCompanyUnpaidRecordsTasklet.class);
 
@@ -66,11 +68,11 @@ public class CollectCompanyUnpaidRecordsTasklet implements Tasklet {
 				if (isWithdraw
 						&& (Math.abs(br.getRecord().getWithdraw()
 								- fr.getRecord().getPayment()) <= CALIBRATION)) {
-					factor += 2;
+					factor += AMOUNT_FACTOR;
 				} else if (!isWithdraw
 						&& (Math.abs(br.getRecord().getDeposit()
 								- fr.getRecord().getProceeds()) <= CALIBRATION)) {
-					factor += 2;
+					factor += AMOUNT_FACTOR;
 				}
 
 				allFinanceKeywords = fr.getKeywords().get(

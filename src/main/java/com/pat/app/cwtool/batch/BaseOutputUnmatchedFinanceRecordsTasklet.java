@@ -1,17 +1,13 @@
 package com.pat.app.cwtool.batch;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import com.pat.app.cwtool.model.FinanceRecord;
 
-public abstract class OutputUnmatchedFinanceRecordsTasklet extends
-		BaseOuputUnmatchedRecordsTasklet<FinanceRecord> {
+public abstract class BaseOutputUnmatchedFinanceRecordsTasklet extends BaseOuputUnmatchedRecordsTasklet<FinanceRecord> {
 
-	public OutputUnmatchedFinanceRecordsTasklet() {
+	public BaseOutputUnmatchedFinanceRecordsTasklet() {
 		super();
 	}
 
@@ -20,20 +16,12 @@ public abstract class OutputUnmatchedFinanceRecordsTasklet extends
 		int cursor = 0;
 		Cell cell = row.createCell(cursor++, Cell.CELL_TYPE_NUMERIC);
 		cell.setCellValue(record.getDate());
-		Sheet sheet = cell.getRow().getSheet();
-		Workbook wb = sheet.getWorkbook();
-		CellStyle cellStyle = wb.createCellStyle();
-		cellStyle.setDataFormat(wb.getCreationHelper().createDataFormat()
-				.getFormat("yyyy-MM-dd"));
-		cell.setCellStyle(cellStyle);
-	
+		cell.setCellStyle(dateCellStyle);
+
 		row.createCell(cursor++).setCellValue(record.getFinanceId());
 		row.createCell(cursor++).setCellValue(record.getSummary());
 		row.createCell(cursor++).setCellValue(getAmount(record));
-	
-		for (int i = 0; i < cursor; i++) {
-			sheet.autoSizeColumn(i);
-		}
+
 	}
 
 	@Override
